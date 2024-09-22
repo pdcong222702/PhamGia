@@ -1,0 +1,85 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\PhamGia.bundle.scp.css",
+      "PackagePath": "staticwebassets\\PhamGia.bundle.scp.css"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\FONT-LICENSE",
+      "PackagePath": "staticwebassets\\css\\open-iconic"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\ICON-LICENSE",
+      "PackagePath": "staticwebassets\\css\\open-iconic"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\README.md",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\README.md"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\font\\css\\open-iconic-bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\css\\open-iconic-bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.eot",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.eot"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.otf",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.otf"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.svg",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.svg"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.ttf",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.ttf"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.woff",
+      "PackagePath": "staticwebassets\\css\\open-iconic\\font\\fonts\\open-iconic.woff"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\images\\logo.jpg",
+      "PackagePath": "staticwebassets\\images\\logo.jpg"
+    },
+    {
+      "Id": "D:\\PhamGiaWeb\\PhamGia\\PhamGia\\wwwroot\\js\\JSInterop.js",
+      "PackagePath": "staticwebassets\\js\\JSInterop.js"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.PhamGia.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.build.PhamGia.props",
+      "PackagePath": "build\\PhamGia.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.buildMultiTargeting.PhamGia.props",
+      "PackagePath": "buildMultiTargeting\\PhamGia.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.buildTransitive.PhamGia.props",
+      "PackagePath": "buildTransitive\\PhamGia.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

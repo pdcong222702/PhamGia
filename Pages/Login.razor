@@ -1,0 +1,61 @@
+﻿@layout LoginLayout
+@page "/"
+@using PhamGia.Data
+@using PhamGia.PhamGiaLib.impl
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+@inject IBDSContext _ibdsContext
+<RadzenCard class="rz-my-12 rz-mx-auto" Style="max-width: 420px">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Start" Gap="1rem" class="rz-p-4">
+        <RadzenImage Path="/images/logo.jpg" Style="width: 100px; height: 100px; border-radius: 50%;" />
+        <RadzenStack Gap="10">
+            <RadzenText TextStyle="TextStyle.Body1"><b>Chào mừng đến với Phạm Gia</b></RadzenText>
+            <RadzenText TextStyle="TextStyle.Overline" TextAlign="TextAlign.Center">Đăng nhập để tiếp tục</RadzenText>
+        </RadzenStack>
+    </RadzenStack>
+    <hr />
+    <RadzenColumn Size="12" SizeMD="4" class="mb-4">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H2">Tên đăng nhập</RadzenText>
+        <RadzenTextBox @bind-Value="username" Style="width: 100%" aria-label="Tên đăng nhập" Placeholder="Nhập tên đăng nhập....." />
+    </RadzenColumn>
+    <RadzenColumn Size="12" SizeMD="4" class="mb-4">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H2">Mật khẩu</RadzenText>
+        <RadzenTextBox @bind-Value="password" Style="width: 100%" aria-label="Mật khẩu" Type="password" Placeholder="Nhập mật khẩu." />
+    </RadzenColumn>
+    <RadzenButton Text="Đăng nhập" Click="Logins"  Variant="Variant.Outlined" Shade="Shade.Light"  ButtonStyle="ButtonStyle.Info" />
+</RadzenCard>   
+
+
+@code {
+    private string username;
+    private string password;
+
+    void ShowNotification(string summary, string detail)
+    {
+
+        NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = summary,
+                Detail = detail,
+                Duration = 4000
+            });
+    }
+    private void  Logins()
+    {
+        User user = new User();
+        user.Username = username;
+        user.Password = password;
+        ResponseMessage response = _ibdsContext.Login(user);
+        if (response.Message == "Đăng nhập thành công Admin")
+        {
+            Navigation.NavigateTo("/index");
+        }
+        else
+        {
+            ShowNotification("LỖI ĐĂNG NHẬP", "Kiểm tra tài khoản/mật khẩu");
+            username = string.Empty;
+            password = string.Empty; 
+        }
+    }
+}

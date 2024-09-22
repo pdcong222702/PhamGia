@@ -1,0 +1,516 @@
+﻿@page "/index"
+@using NPOI.HSSF.UserModel
+@using NPOI.SS.UserModel
+@using Newtonsoft.Json
+@using OfficeOpenXml
+@using PhamGia.Core.DataTableObject.Mapping
+@using PhamGia.Data
+@using PhamGia.PhamGiaLib
+@using PhamGia.PhamGiaLib.impl
+@using System.Data
+@using Syncfusion.XlsIO
+@using static PhamGia.PhamGiaLib.ApiService
+@inject IBDSContext ibdsContext;
+@inject ExcelService excelService;
+@inject IJSRuntime jsruntime;
+@inject DialogService DialogService;
+@inject ApiService ApiService
+<style>
+    
+</style>
+ <RadzenText TextStyle="TextStyle.H3" TextAlign="TextAlign.Center">Thông tin BDS</RadzenText>
+ <hr />
+<div class="row" style="display:flex">
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Hướng</RadzenText>
+        <RadzenTextBox @bind-Value="valueDirection" Style="width: 100%" aria-label="Default TextBox" />
+    </RadzenColumn>
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Diện tích</RadzenText>
+        <RadzenTextBox @bind-Value="valueAcreage" Style="width: 100%" aria-label="Default TextBox" />
+    </RadzenColumn>
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Mặt tiền</RadzenText>
+        <RadzenTextBox @bind-Value="valueMainStreet" Style="width: 100%" aria-label="Default TextBox" />
+    </RadzenColumn>
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Giá bán</RadzenText>
+        <RadzenTextBox @bind-Value="valuePrice" Style="width: 100%" aria-label="Default TextBox" />
+    </RadzenColumn>
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Giá theo m<sup>2</sup></RadzenText>
+        <RadzenTextBox @bind-Value="valuePriceByAcreage" Style="width: 100%" aria-label="Default TextBox" />
+    </RadzenColumn>
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Quận và huyện</RadzenText>
+        <RadzenDropDown Style="width: 100%; max-width: 400px;"
+                        Name="DropDownBindValue2"
+                        Data=@uniqueDistricts
+                        @bind-Value="selectedDistrictId"
+                        TextProperty="DistrictName"
+                        ValueProperty="DistrictId"
+                        Change="@(e => OnDistrictChanged(e))" />
+    </RadzenColumn>
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Phường</RadzenText>
+        <RadzenDropDown 
+            Style="width: 100%; max-width: 400px;" 
+            Name="WardDropDown" 
+            Data=@uniqueWards
+            @bind-Value="selectedWardId"
+            TextProperty="WardName" 
+            ValueProperty="WardName" 
+        />
+
+    </RadzenColumn>
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Loại BDS</RadzenText>
+        <RadzenDropDown @bind-Value=@brandFirst Data=@uniqueBrandList Style="width: 100%; max-width: 400px;" Name="DropDownBindValue1" />
+    </RadzenColumn>
+
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Tình trạng</RadzenText>
+        <RadzenDropDown @bind-Value=@statusFirst Data=@uniqueStatusList Style="width: 100%; max-width: 400px;" Name="DropDownBindValue3" />
+    </RadzenColumn>
+
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Thuế, phí nhà đất</RadzenText>
+        <RadzenDropDown @bind-Value=@feeFirst Data=@uniqueFeeList Style="width: 100%; max-width: 400px;" Name="DropDownBindValue4" />
+    </RadzenColumn>
+
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Loại diện tích</RadzenText>
+        <RadzenDropDown @bind-Value=@acreageFirst Data=@uniqueAcreageList Style="width: 100%; max-width: 400px;" Name="DropDownBindValue5" />
+    </RadzenColumn>
+
+    <RadzenColumn class="col-md-2">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Phân giá khúc</RadzenText>
+        <RadzenDropDown @bind-Value=@value Data=@uniquePriceList Style="width: 100%; max-width: 400px;" Name="DropDownBindValue6" />
+    </RadzenColumn>
+
+</div>
+
+<RadzenStack class="mt-4 mb-4"  Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.Wrap" >
+    <RadzenButton Text="Save" Icon="search" ButtonStyle="ButtonStyle.Info" Shade="Shade.Dark" Click="filter" Visible="@isInputFilled" />
+    <RadzenButton Text="Lọc BDS" Icon="search" ButtonStyle="ButtonStyle.Info" Shade="Shade.Dark" Click="filter" />
+    <RadzenButton Text="Làm mới" Icon="search" ButtonStyle="ButtonStyle.Base" Shade="Shade.Dark" Click="onFresh" />
+    <RadzenButton Text="Xuất Excel" Click="@CreateDocument" Icon="open_in_browser" ButtonStyle="ButtonStyle.Success" Shade="Shade.Dark" />
+</RadzenStack>
+
+<InputFile  OnChange="HandleFileSelected" />
+<RadzenStack class="hidden-input" Gap="1rem" Style="margin-top:24px">
+    
+    <RadzenDataGrid @ref=propertiesDataGrid AllowColumnResize="true" 
+                    PageSize="7" AllowPaging="true" AllowSorting="true" Data="@properties" ColumnWidth="180px" >
+        <Columns>
+            <RadzenDataGridColumn Property="@nameof(Property.MNV)" Title="MNV" Width="90px"/>
+            <RadzenDataGridColumn Property="@nameof(Property.Date)" Title="Ngày" />
+            <RadzenDataGridColumn Property="@nameof(Property.CustomerName)" Title="Khách hàng" Width="300px" />
+            <RadzenDataGridColumn Property="@nameof(Property.HienTrang)" Title="Hiện trạng" />
+            <RadzenDataGridColumn Property="@nameof(Property.Street)" Title="Đường đi" />
+            <RadzenDataGridColumn Property="@nameof(Property.District)" Title="Quận và huyện" />
+            <RadzenDataGridColumn Property="@nameof(Property.Ward)" Title="Phường" />
+            <RadzenDataGridColumn Property="@nameof(Property.AddressDetail)" Title="Chi tiết địa chỉ" Width="300px" />
+            <RadzenDataGridColumn Property="@nameof(Property.Information)" Title="Thông tin" Width="300px" />
+            <RadzenDataGridColumn Property="@nameof(Property.PriceUnit)" Title="Phân khúc giá" />
+            <RadzenDataGridColumn Property="@nameof(Property.Price)" Title="Giá bán" Width="110px"/>
+            <RadzenDataGridColumn Property="@nameof(Property.PriceByAcreage)" Title="G/M2"  Width="100px"/>
+            <RadzenDataGridColumn Property="@nameof(Property.Acreage)" Title="DT" Width="70px" />
+            <RadzenDataGridColumn Property="@nameof(Property.MainStreet)" Title="MT" Width="70px" />
+            <RadzenDataGridColumn Property="@nameof(Property.Status)" Title="Tình trạng" />
+            <RadzenDataGridColumn Property="@nameof(Property.FacebookLink)" Title="Link Facebook">
+                <Template>
+                    @{
+                        var facebookLink = (Property)context;
+                    }
+                    @if (string.IsNullOrEmpty(facebookLink.FacebookLink))
+                    {
+                        <RadzenTextBox @bind-Value="facebookLink.FacebookLink"
+                                       @oninput="@(e => OnInputChanged(facebookLink.FacebookLink))"
+                                       Style="width:100%" />
+                    }
+                    else
+                    {
+                        <span>@facebookLink.FacebookLink</span>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+
+    </RadzenDataGrid>  
+</RadzenStack> 
+
+@code {
+    RadzenDataGrid<Property> propertiesDataGrid;
+    string value;
+    string brandFirst;
+    string statusFirst;
+    string feeFirst;
+    string acreageFirst;
+    private string selectedDistrictId;
+    private string selectedWardId;
+    List<string> listPrice = new List<string>();
+    List<string> listBrand = new List<string>();
+    List<string> listStatus = new List<string>();
+    List<string> listFee = new List<string>();
+    List<string> listAcreage = new List<string>();
+    private List<District> districts = new List<District>();
+    private List<Ward> wards = new List<Ward>();
+
+    private List<string> uniquePriceList => listPrice.Distinct().ToList();
+    private List<string> uniqueBrandList => listBrand.Distinct().ToList();
+    private List<string> uniqueStatusList => listStatus.Distinct().ToList();
+    private List<string> uniqueFeeList => listFee.Distinct().ToList();
+    private List<string> uniqueAcreageList => listAcreage.Distinct().ToList();
+    private List<District> uniqueDistricts => districts.Distinct().ToList();
+    private List<Ward> uniqueWards => wards.Distinct().ToList();
+    private string response;
+    IEnumerable<Property> properties = new List<Property>();
+
+
+
+    // value text box
+    private string valueDirection { get; set; } = string.Empty;
+    private string valueAcreage { get; set; } = string.Empty;
+    private string valueMainStreet { get; set; } = string.Empty;
+    private string valuePrice { get; set; } = string.Empty;
+    private string valuePriceByAcreage { get; set; } = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await callApiDistrict();
+        loadData();
+
+    }
+
+    public void setPriceDropDown()
+    {
+        listPrice.Add("");
+        for (int i = 0; i < 10; i = i + 2)
+        {
+            string priceDropDown ;
+            if(i == 0)
+            {
+                priceDropDown = "Dưới 2 tỷ";
+            }
+            else
+            {
+                priceDropDown = "Từ " + i.ToString() + " tỷ - " + (i + 2).ToString() + " tỷ";
+
+            }
+
+            listPrice.Add(priceDropDown);
+        }
+        string priceLast = "Trên 10  tỷ";
+        listPrice.Add(priceLast);
+        value = listPrice[0];
+    }
+
+    public void setBrandDropDown()
+    {
+        listBrand.Add("");
+        listBrand.Add("Nhà");
+        listBrand.Add("Chưng cư");
+        listBrand.Add("Đất");
+        brandFirst = listBrand[0];
+    }
+    public void setStatusDropDown()
+    {
+        listStatus.Add("");
+        listStatus.Add("Đã bán");
+        listStatus.Add("Chưa bán");
+        statusFirst = listStatus[0];
+    }
+    public void setFeeDropDown()
+    {
+        listFee.Add("");
+        listFee.Add("Bao phí");
+        listFee.Add("Không bao phí");
+        feeFirst = listFee[0];
+    }
+    public void setAcreageDropDown()
+    {
+        listAcreage.Add("");
+        listAcreage.Add("Dưới 30");
+        listAcreage.Add("Từ 30 đến 40");
+        listAcreage.Add("Từ 40 đến 60");
+        listAcreage.Add("Trên 60");
+        acreageFirst = listAcreage[0];
+    }
+    public void loadData()
+    {
+
+        setBrandDropDown();
+        setPriceDropDown();
+        setStatusDropDown();
+        setFeeDropDown();
+        setAcreageDropDown();
+        Data();
+
+    }
+    public void Data()
+    {
+        ResponseMessage cResponseMessage = ibdsContext.GetBDS();
+        properties = ((DataSet)cResponseMessage.Data).ToListItem<Property>();
+        var result = JsonConvert.SerializeObject(properties);
+    }
+
+    private async Task OnDistrictChanged(object newValue)
+    {
+        if (newValue is string districtId && !string.IsNullOrEmpty(districtId))
+        {
+            // Lấy danh sách wards theo districtId
+            wards = await loadWardsByDistrictAsync(districtId);
+            // Reset selected ward khi district thay đổi
+            selectedWardId = null;
+        }
+        else
+        {
+            // Nếu không có districtId, thì reset danh sách wards
+            wards.Clear();
+        }
+    }
+
+    private async Task<List<Ward>> loadWardsByDistrictAsync(string districtId)
+    {
+        wards = await ApiService.GetWardsAsync(districtId);
+        return wards;
+    }
+    public async Task callApiDistrict()
+    {
+        districts = await ApiService.GetDistrictsAsync();
+    }
+    MemoryStream excelStream;
+
+    protected async void CreateDocument()
+    {
+        DataTable table = ConvertToDataTable(properties);
+        excelStream = excelService.createExcel(table);
+        await jsruntime.SaveAs("PhamGia_BDS.xlsx", excelStream.ToArray());
+    }
+    public static DataTable ConvertToDataTable(IEnumerable<Property> properties)
+    {
+        // Create a new DataTable
+        DataTable table = new DataTable();
+        table.Columns.Add("Mã BDS", typeof(string));
+        table.Columns.Add("Khách hàng", typeof(string));
+        table.Columns.Add("Số điện thoại", typeof(string));
+        table.Columns.Add("Loại BDS", typeof(string));
+        table.Columns.Add("Quận và huyện", typeof(string));
+        table.Columns.Add("Phường", typeof(string));
+        table.Columns.Add("Chi tiết địa chỉ", typeof(string));
+        table.Columns.Add("Vị trí map", typeof(string));
+        table.Columns.Add("Hướng", typeof(string));
+        table.Columns.Add("Diện tích ", typeof(string));
+        table.Columns.Add("Loại diện tích", typeof(string));
+        table.Columns.Add("Mặt tiền (m)", typeof(string));
+        table.Columns.Add("Mô tả BDS", typeof(string));
+        table.Columns.Add("Tiện ích", typeof(string));
+        table.Columns.Add("Đường đi", typeof(string));
+        table.Columns.Add("Đồ đạc", typeof(string));
+        table.Columns.Add("Giá bán", typeof(string));
+        table.Columns.Add("Giá check", typeof(string));
+        table.Columns.Add("Tọa độ", typeof(string));
+        table.Columns.Add("Yêu cầu thêm", typeof(string));
+        table.Columns.Add("Ảnh kí hợp đồng", typeof(string));
+        table.Columns.Add("Ảnh chủ kí", typeof(string));
+        table.Columns.Add("MNV", typeof(string));
+        table.Columns.Add("Thời gian nhập", typeof(string));
+        table.Columns.Add("Ngày", typeof(string));
+        table.Columns.Add("Ngày chuyển", typeof(string));
+        table.Columns.Add("Tình trạng", typeof(string));
+        table.Columns.Add("Cộng sự", typeof(string));
+        table.Columns.Add("Thuế - Phí nhà đất", typeof(string));
+        table.Columns.Add("User chinh", typeof(string));
+        table.Columns.Add("Show", typeof(string));
+        table.Columns.Add("Vay ngân hàng", typeof(string));
+        table.Columns.Add("Thông tin", typeof(string));
+        // Populate the DataTable with rows
+        foreach (var property in properties)
+        {
+            DataRow row = table.NewRow();
+            table.Rows.Add(property.PropertyCode,
+            property.CustomerName, property.CustomerPhone, property.Brand, 
+            property.District,
+            property.Ward,
+            property.AddressDetail, property.MapLink,
+            property.Direction,
+            property.Acreage,
+            property.PriceByAcreage,
+            property.MainStreet,
+            property.Description,
+            property.Extensions,
+            property.Street,
+            property.Interior,
+            property.Price,
+            property.CheckPrice,
+            property.Coordinate,
+            property.Requried,
+            property.ImageContact,
+            property.ImageSign,
+            property.MNV,
+            property.CreatedDate,
+            property.CreatedDate,
+            property.MovedDate,
+            property.Status,
+            property.Associate,
+            property.IsTax,
+            property.UserUpdated,
+            property.Show, property.PayBank, property.Information
+            );
+        }
+
+        return table;
+    }
+
+    private List<Property> dataList;
+    List<ResponseMessage> lstResponse = new List<ResponseMessage>();
+
+    private async Task<List<Property>> ReadExcelFile(Stream fileStream)
+    {
+        var dataList = new List<Property>();
+
+        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+        // Đọc stream vào mảng byte
+        byte[] fileBytes;
+        using (var memoryStream = new MemoryStream())
+        {
+            await fileStream.CopyToAsync(memoryStream);
+            fileBytes = memoryStream.ToArray();
+        }
+
+        // Nạp mảng byte vào ExcelPackage
+        using (var package = new ExcelPackage(new MemoryStream(fileBytes)))
+        {
+            var worksheet = package.Workbook.Worksheets[0];
+
+            for (int row = 2; row <= worksheet.Dimension.End.Row; row++)
+            {
+                var item = new Property
+                    {
+                        PropertyCode = worksheet.Cells[row, 1].Text,
+                        CustomerName = worksheet.Cells[row, 2].Text,
+                        CustomerPhone = worksheet.Cells[row, 3].Text,
+                        Brand = worksheet.Cells[row, 4].Text,
+                        District = worksheet.Cells[row, 5].Text,
+                        Ward = worksheet.Cells[row, 6].Text,
+                        AddressDetail = worksheet.Cells[row, 7].Text,
+                        MapLink = worksheet.Cells[row, 8].Text,
+                        Direction = worksheet.Cells[row, 9].Text,
+                        Acreage = double.TryParse(worksheet.Cells[row, 10].Text, out var acreage) ? acreage : 0f,
+                        BrandAcreage = worksheet.Cells[row, 11].Text,
+                        MainStreet = worksheet.Cells[row, 12].Text,
+                        Description = worksheet.Cells[row, 13].Text,
+                        Extensions = worksheet.Cells[row, 14].Text,
+                        Street = worksheet.Cells[row, 15].Text,
+                        Interior = worksheet.Cells[row, 16].Text,
+                        Price = double.TryParse(worksheet.Cells[row, 17].Text, out var price) ? price : 0f,
+                        CheckPrice = double.TryParse(worksheet.Cells[row, 18].Text, out var checkprice) ? checkprice : 0f,
+                        PriceUnit = worksheet.Cells[row, 19].Text,
+                        PriceByAcreage = worksheet.Cells[row, 20].Text,
+                        Coordinate = worksheet.Cells[row, 21].Text,
+                        Requried = worksheet.Cells[row, 22].Text,
+                        ImageContact = worksheet.Cells[row, 23].Text,
+                        ImageSign = worksheet.Cells[row, 24].Text,
+                        MNV = worksheet.Cells[row, 25].Text,
+                        UserLogin = worksheet.Cells[row,26].Text,
+                        CreatedDate = DateTime.TryParse(worksheet.Cells[row, 27].Text, out var careatedate) ? careatedate : (DateTime?)null,
+                        Date = DateTime.TryParse(worksheet.Cells[row, 28].Text, out var date) ? date : (DateTime?)null,
+                        MovedDate = DateTime.TryParse(worksheet.Cells[row, 29].Text, out var movedate) ? movedate : (DateTime?)null,
+                        Status = worksheet.Cells[row, 30].Text,
+                        Associate = worksheet.Cells[row, 31].Text,
+                        IsTax = worksheet.Cells[row, 32].Text,
+                        UserUpdated = worksheet.Cells[row, 33].Text,
+                        Show = worksheet.Cells[row, 34].Text,
+                        StatusTwo = worksheet.Cells[row, 35].Text,
+                        BrandHouse = worksheet.Cells[row, 36].Text,
+                        HienTrang = worksheet.Cells[row, 37].Text,
+                        PayBank = worksheet.Cells[row, 38].Text,
+                        Information = worksheet.Cells[row, 39].Text,
+                        Week = worksheet.Cells[row, 45].Text,
+                        Month = worksheet.Cells[row, 46].Text,
+                    };
+
+                dataList.Add(item);
+            }
+        }
+
+        return dataList;
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file != null)
+        {
+            var stream = file.OpenReadStream();
+            dataList = await ReadExcelFile(stream);
+            ibdsContext.DeleteBDS(); 
+            foreach(var item in dataList)
+            {
+                lstResponse.Add(ibdsContext.AddBDS(item));
+            }
+        }
+        loadData();
+    }
+
+
+
+
+    public void filter()
+    {
+        if(selectedWardId == null)
+        {
+            selectedWardId = "";
+        }
+        ResponseMessage cResponseMessage = ibdsContext.FilterBDS(valueDirection,valueAcreage, valueMainStreet,valuePrice,valuePriceByAcreage
+    , brandFirst, statusFirst, feeFirst, acreageFirst, value , selectedWardId );
+        properties = ((DataSet)cResponseMessage.Data).ToListItem<Property>();
+        var result = JsonConvert.SerializeObject(properties);
+    }
+    public void onFresh()
+    {
+        valueDirection = "";
+        valueAcreage = "";
+        valueMainStreet = "";
+        valuePrice = "";
+        valuePriceByAcreage = "";
+        value = listPrice[0];
+        brandFirst = listBrand[0];
+        statusFirst = listStatus[0];
+        feeFirst = listFee[0];
+        acreageFirst = listAcreage[0];
+        selectedDistrictId = "";
+        selectedWardId = "";
+        Data();
+    }
+
+
+
+    int orderID = 10248;
+
+    private async Task ShowInlineDialog()
+    {
+        var result = await DialogService.OpenAsync("Simple Dialog", ds =>
+    @<RadzenStack Gap="1.5rem">
+        <p>Confirm Order ID <b>@orderID</b>?</p>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenButton Text="Ok" Click="() => ds.Close(true)" Style="width: 80px;" />
+                <RadzenButton Text="Cancel" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light" />
+            </RadzenStack>
+            <RadzenButton Text="Refresh" Click="(() => { orderID = 10249; ds.Refresh(); })" ButtonStyle="ButtonStyle.Light" />
+        </RadzenStack>
+    </RadzenStack>
+    );
+    }
+
+    private bool isInputFilled = false;
+
+    private void OnInputChanged(string value)
+    {
+        isInputFilled = !string.IsNullOrEmpty(value);
+    }
+}
